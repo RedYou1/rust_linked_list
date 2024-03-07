@@ -51,11 +51,17 @@ fn main() {
     assert_eq!(unsafe { AMOUNT }, 2, "replace");
     assert_eq!(list, List::from_iter(vec.clone()));
     println!("{list:?}");
+
+    println!("{:?}", list[8]);
+    list[8] = TestNode { value: 85 };
+    println!("{:?}", list[8]);
+    println!("{list:?}");
+
     let len = list.len();
     for i in (0..len).rev() {
         list.remove(i);
         vec.remove(i);
-        assert_eq!(unsafe { AMOUNT }, len - i + 2, "remove index:{i}");
+        assert_eq!(unsafe { AMOUNT }, len - i + 3, "remove index:{i}");
         assert_eq!(list, List::from_iter(vec.clone()));
     }
     println!("{list:?}");

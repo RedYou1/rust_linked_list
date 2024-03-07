@@ -1,4 +1,8 @@
-use std::{fmt::Debug, mem::swap, ops::DerefMut};
+use std::{
+    fmt::Debug,
+    mem::swap,
+    ops::{DerefMut, Index, IndexMut},
+};
 
 struct Node<T> {
     element: T,
@@ -245,5 +249,30 @@ impl<T: PartialEq<V>, V> PartialEq<List<V>> for List<T> {
             current1 = &c1.next;
             current2 = &c2.next;
         }
+    }
+}
+
+impl<T: Clone> Index<usize> for List<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.first
+            .as_ref()
+            .expect("List Index")
+            .get(index)
+            .map(Node::element)
+            .ok()
+            .expect("List Index")
+    }
+}
+
+impl<T: Clone> IndexMut<usize> for List<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        self.first
+            .as_mut()
+            .expect("List Index")
+            .get_mut(index)
+            .map(Node::element_mut)
+            .expect("List Index")
     }
 }
