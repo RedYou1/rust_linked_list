@@ -240,28 +240,22 @@ impl<T: Clone> Iterator for List<T> {
     }
 }
 
-pub trait EqList<Other> {
-    fn list_eq(&self, other: &Other) -> bool;
-}
-
-impl<T: PartialEq<V>, V> EqList<List<V>> for List<T> {
-    fn list_eq(&self, other: &List<V>) -> bool {
+impl<T> List<T> {
+    pub fn list_eq<V: PartialEq<T>>(&self, other: &List<V>) -> bool {
         let mut current1 = &self.first;
         let mut current2 = &other.first;
         loop {
-            if current1.is_none() && current2.is_none() {
-                return true;
+            match (current1.as_ref(), current2.as_ref()) {
+                (None, None) => return true,
+                (None, _) | (_, None) => return false,
+                (Some(c1), Some(c2)) => {
+                    if c2.element != c1.element {
+                        return false;
+                    }
+                    current1 = &c1.next;
+                    current2 = &c2.next;
+                }
             }
-            if current1.is_none() || current2.is_none() {
-                return false;
-            }
-            let c1 = current1.as_ref().expect("").as_ref();
-            let c2 = current2.as_ref().expect("").as_ref();
-            if c1.element != c2.element {
-                return false;
-            }
-            current1 = &c1.next;
-            current2 = &c2.next;
         }
     }
 }
@@ -270,14 +264,15 @@ impl<T: PartialEq<V>, V, I: IntoIterator<Item = V> + Clone> PartialEq<I> for Lis
     fn eq(&self, other: &I) -> bool {
         let mut current1 = &self.first;
         for current2 in other.clone() {
-            if current1.is_none() {
-                return false;
+            match current1.as_ref() {
+                None => return false,
+                Some(c1) => {
+                    if c1.element != current2 {
+                        return false;
+                    }
+                    current1 = &c1.next;
+                }
             }
-            let c1 = current1.as_ref().expect("").as_ref();
-            if c1.element != current2 {
-                return false;
-            }
-            current1 = &c1.next;
         }
         current1.is_none()
     }

@@ -1,8 +1,6 @@
 use list::List;
 use std::fmt::Debug;
 
-use crate::list::EqList;
-
 pub mod list;
 
 static mut AMOUNT: usize = 0;
@@ -28,8 +26,8 @@ impl PartialEq<i32> for TestNode {
         self.value == *other
     }
 }
-impl PartialEq<TestNode> for TestNode {
-    fn eq(&self, other: &TestNode) -> bool {
+impl PartialEq for TestNode {
+    fn eq(&self, other: &Self) -> bool {
         self.value == other.value
     }
 }
