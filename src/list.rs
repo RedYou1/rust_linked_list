@@ -54,7 +54,7 @@ impl<T> Node<T> {
         }
     }
 
-    // replace next with None even when he is referencing himself.
+    /// replace next with None even when he is referencing himself.
     pub fn drop_next(&mut self) {
         let mut temp = None;
         swap(&mut self.next, &mut temp);
@@ -230,8 +230,22 @@ impl<T> FromIterator<T> for List<T> {
     }
 }
 
-impl<T: PartialEq<V>, V> PartialEq<List<V>> for List<T> {
-    fn eq(&self, other: &List<V>) -> bool {
+impl<T: Clone> Iterator for List<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let element = self.get(0).cloned();
+        self.remove(0);
+        element
+    }
+}
+
+pub trait EqList<Other> {
+    fn list_eq(&self, other: &Other) -> bool;
+}
+
+impl<T: PartialEq<V>, V> EqList<List<V>> for List<T> {
+    fn list_eq(&self, other: &List<V>) -> bool {
         let mut current1 = &self.first;
         let mut current2 = &other.first;
         loop {
@@ -252,7 +266,24 @@ impl<T: PartialEq<V>, V> PartialEq<List<V>> for List<T> {
     }
 }
 
-impl<T: Clone> Index<usize> for List<T> {
+impl<T: PartialEq<V>, V, I: IntoIterator<Item = V> + Clone> PartialEq<I> for List<T> {
+    fn eq(&self, other: &I) -> bool {
+        let mut current1 = &self.first;
+        for current2 in other.clone() {
+            if current1.is_none() {
+                return false;
+            }
+            let c1 = current1.as_ref().expect("").as_ref();
+            if c1.element != current2 {
+                return false;
+            }
+            current1 = &c1.next;
+        }
+        current1.is_none()
+    }
+}
+
+impl<T> Index<usize> for List<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -266,7 +297,7 @@ impl<T: Clone> Index<usize> for List<T> {
     }
 }
 
-impl<T: Clone> IndexMut<usize> for List<T> {
+impl<T> IndexMut<usize> for List<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.first
             .as_mut()
