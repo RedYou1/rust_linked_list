@@ -41,12 +41,23 @@ fn main() {
         assert_eq!(unsafe { AMOUNT }, 0, "push index:{i}");
         assert_eq!(list, vec);
     }
-    for (i, element) in list.clone().enumerate() {
+    for (i, element) in list.iter().enumerate() {
         assert_eq!(element.value, i32::try_from(i * i).expect(""));
     }
-    assert_eq!(unsafe { AMOUNT }, 16, "clone + enumerate");
-    unsafe {
-        AMOUNT -= 16;
+    assert_eq!(unsafe { AMOUNT }, 0, "don't consume elements");
+
+    {
+        let mut list = list.clone();
+        let mut i = 0;
+        while let Some(element) = list.get(0) {
+            assert_eq!(element.value, i * i);
+            i += 1;
+            list.remove(0);
+        }
+        assert_eq!(unsafe { AMOUNT }, 8, "clone");
+        unsafe {
+            AMOUNT -= 8;
+        }
     }
 
     list.insert(4, TestNode { value: 16 });

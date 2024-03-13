@@ -194,6 +194,10 @@ impl<T> List<T> {
             None
         }
     }
+
+    pub fn iter(&self) -> RefListIter<'_, T> {
+        self.into_iter()
+    }
 }
 
 impl<T: Debug> Debug for List<T> {
@@ -230,13 +234,34 @@ impl<T> FromIterator<T> for List<T> {
     }
 }
 
-impl<T: Clone> Iterator for List<T> {
-    type Item = T;
+pub struct RefListIter<'a, T> {
+    current: Option<&'a Node<T>>,
+}
+
+impl<'a, T> Iterator for RefListIter<'a, T> {
+    type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let element = self.get(0).cloned();
-        self.remove(0);
-        element
+        match self.current.as_ref() {
+            None => None,
+            Some(c) => {
+                let result = &c.element;
+                self.current = c.next.as_ref().map(Box::as_ref);
+                Some(result)
+            }
+        }
+    }
+}
+
+impl<'a, T> IntoIterator for &'a List<T> {
+    type Item = &'a T;
+
+    type IntoIter = RefListIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        RefListIter {
+            current: self.first.as_ref().map(Box::as_ref),
+        }
     }
 }
 
